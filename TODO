@@ -1,0 +1,28 @@
+link this repo in place of current config, compare with latest kickstart
+use sessions if they work as intended (open dirs/workspaces with cached files)
+set number column width to 3
+structure into files, look up how pros do it (0 to LSP Linux bookmark, GPT)
+maybe remove auto whitespace trimming - or just don't trim on write - 3 plugins
+	won't auto format on save and other plugins have the same problem?
+	maybe the problem is saving on undo/redo, but how can you fix it?
+shortcut for sorting paragraph (vip-sort)
+https://github.com/rockerBOO/awesome-neovim
+https://www.youtube.com/@typecraft_dev/videos
+	something for bulk find, replace, edit, etc.
+compare with kickstart configuration (check README)
+checkhealth
+auto :!clang-format -i <path>
+undefined global `vim` after edit/write
+dir structure: nvim/lua/user/...lua?
+a lot of keymaps are not useful; remap them
+https://www.youtube.com/watch?v=b7OguLuaYvE
+https://www.youtube.com/watch?v=6F3ONwrCxMg
+https://www.youtube.com/watch?v=GuIcGxYqaQQ
+auto format and wrap line at limit on save (variable = '89' or whatever used across)
+whitespace trimming breaks undo
+multiple terminals - is tmux necessary? separate "tab"(? i.e. window) would be nice
+cleanup all the install paths + config/local/cache
+shortcuts for putting text from clipboard on a new line even though it doesn't have one
+	or to separate on a new line, like the inverse of j/J and take care of spaces in any context
+update to latest version that works (at least 0.9.4)
+opening dir looks broken
