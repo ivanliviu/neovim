@@ -4,12 +4,13 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- what makes spaces look better than tags? undo space aspect and use here
-vim.g.have_nerd_font = true vim.opt.bri = true
+vim.g.have_nerd_font = true -- actual vim variable?
+vim.opt.bri = true
 vim.opt.cc = '89'
 vim.opt.cole = 0
 vim.opt.cul = true
 vim.opt.et = false
-vim.opt.ls = 3
+vim.opt.ls = 2
 vim.opt.fixeol = true
 vim.opt.hid = true
 vim.opt.ic = true
@@ -49,11 +50,8 @@ local function map_expr(key, value, mode) map(key, value, mode, { expr = true })
 local function map_leader(key, value, mode) map('<leader>' .. key, value, mode) end
 local function map_leader_cmd(key, value, mode) map_cmd('<leader>' .. key, value, mode) end
 
-map(';', 'i', { 'n', 'v' })
-map('j', 'h', { 'n', 'v' })
-map_expr('i', "v:count == 0 ? 'gk' : 'k'", { 'n', 'v' }) -- dix/cix are a problem
-map_expr('k', "v:count == 0 ? 'gj' : 'j'", { 'n', 'v' })
 -- what's default for noremap? when's it needed?
+-- proper neovim/lua commands for some more of these? like <leader>d, fn for setting pwd
 map('<Space>', '<Nop>', { 'n', 'v' }, { noremap = true })
 map('C', '\"_C') -- replacement with clipboard macro would be nice
 map('R', '\"_R')
@@ -64,11 +62,11 @@ map('s', '\"_s')
 map('x', '\"_x')
 map_cmd('<C-h>', 'che')
 map_cmd('<Esc>', 'nohls')
-map_cmd('<S-j>', 'BufferPrevious')
-map_cmd('<S-l>', 'BufferNext')
 map_cmd('<Tab>', 'BufferNext')
 map_cmd('<S-Tab>', 'BufferPrevious')
-map_cmd('Q', 'qa')
+map_cmd('Q', 'wqa') -- also force write the current buffer to avoid errors
+map_expr('j', "v:count == 0 ? 'gj' : 'j'", { 'n', 'v' })
+map_expr('k', "v:count == 0 ? 'gk' : 'k'", { 'n', 'v' })
 map_leader('d', vim.diagnostic.setloclist)
 map_leader('j', '<C-w>h')
 map_leader('k', '<C-w>j')
@@ -101,7 +99,19 @@ if not vim.loop.fs_stat(lazypath) then -- update to vim.uv.fs_stat?
 end
 vim.opt.rtp:prepend(lazypath)
 
-require('lazy').setup({ -- Run :Lazy; some packages are not 'started'?
+-- Run :Lazy; some packages are not 'started'?
+-- Use `opts = {}` to force a plugin to be loaded.
+require('lazy').setup({
+	{
+		"gbprod/substitute.nvim", -- !!!
+		opts = { --[[ configuration here ]] }
+	},
+	{
+		'folke/todo-comments.nvim', -- TODO: requires : suffix
+		event = 'VimEnter',
+		dependencies = { 'nvim-lua/plenary.nvim' },
+		opts = { signs = false }
+	},
 	'nvim-tree/nvim-tree.lua',
 	{
 		'nvim-tree/nvim-web-devicons',
@@ -121,6 +131,12 @@ require('lazy').setup({ -- Run :Lazy; some packages are not 'started'?
 		dependencies = { 'nvim-tree/nvim-web-devicons' },
 		opts = {
 			options = {
+				-- instead of this improve line content? otherwise this is buggy, show line
+				--	just after opening a directory for example
+				-- disabled_filetypes = {
+				--   statusline = { 'NvimTree' },
+				--   winbar = { 'NvimTree' },
+				-- },
 				icons_enabled = true,
 				theme = {
 					normal = {
@@ -142,46 +158,21 @@ require('lazy').setup({ -- Run :Lazy; some packages are not 'started'?
 			},
 		},
 	},
-	{ 'github/copilot.vim', opts = {}, config = function() require('copilot').setup({}) end },
+	-- { 'github/copilot.vim', opts = {}, config = function() require('copilot').setup({}) end },
 	{
-		-- https://github.com/Mofiqul/dracula.nvim - check for all plugins
 		-- what causes bright yellow on alignment?
-		'Mofiqul/dracula.nvim',
+		'ivanliviu/dracula', -- maybe rename repo to dracula.nvim
+		priority = 1000, -- Make sure to load this before all the other start plugins.
 		name = 'dracula',
-		config = function()
+		init = function() end, -- called before plugin is loaded
+		config = function() --  called after plugin is loaded
 			require('dracula').setup({
-				colors = {
-					bg = '#1e1c24', -- 255, 1/8, 1/8
-					black = '#080020', -- 255, 1, 1/16
-					bright_blue = '#d0c0ff', -- 255, 1, 7/8
-					bright_cyan = '#c0ffff', -- 180, 1, 7/8
-					bright_green = '#c0ffc0', -- 120, 1, 7/8
-					bright_magenta = '#ffc0e0', -- 330, 1, 7/8
-					bright_red = '#ffc0c0', -- 0, 1, 7/8
-					bright_white = '#ffffff', -- 0, 1, 1
-					bright_yellow = '#ffffc0', -- 60, 1, 7/8
-					comment = '#bbb8c8', -- 255, 1/8, 3/4
-					cyan = '#80ffff', -- 180, 1, 3/4
-					fg = '#edfbc3', -- 0, 1, 1
-					green = '#80ff80', -- 120, 1, 3/4
-					gutter_fg = '#2d2a36', -- 255, 1/8, 3/16
-					menu = '#2d2a36', -- 255, 1/8, 3/16
-					nontext = '#3c3848', -- 255, 1/8, 1/4
-					orange = '#ffc080', -- 30, 1, 3/4
-					pink = '#ff80c0', -- 330, 1, 3/4
-					purple = '#a080ff', -- 255, 1, 3/4
-					red = '#ff8080', -- 0, 1, 3/4
-					selection = '#3c3848', -- 255, 1/8, 1/4
-					visual = '#3c3848', -- 255, 1/8, 1/4
-					white = '#e7dfff', -- 255, 1, 15/16
-					yellow = '#ffff80', -- 60, 1, 3/4
-				},
 				italic_comment = true,
 				lualine_bg_color = '#ff0000', -- not working
 				overrides = {},
 				show_end_of_buffer = true,
 				transparent_bg = true })
-			vim.cmd 'colorscheme dracula'
+			vim.cmd.colorscheme 'dracula'
 		end
 	},
 	{
@@ -307,29 +298,6 @@ require('lazy').setup({ -- Run :Lazy; some packages are not 'started'?
 				topdelete = { text = '‾' },
 				changedelete = { text = '~' },
 			},
-			on_attach = function(bufnr)
-				vim.keymap.set('n', '<leader>hp', require('gitsigns').preview_hunk, { buffer = bufnr, desc = 'Preview git hunk' })
-				-- don't override the built-in and fugitive keymaps
-				local gs = package.loaded.gitsigns
-				vim.keymap.set({ 'n', 'v' }, ']c', function()
-					if vim.wo.diff then
-						return ']c'
-					end
-					vim.schedule(function()
-						gs.next_hunk()
-					end)
-					return '<Ignore>'
-				end, { expr = true, buffer = bufnr, desc = 'Jump to next hunk' })
-				vim.keymap.set({ 'n', 'v' }, '[c', function()
-					if vim.wo.diff then
-						return '[c'
-					end
-					vim.schedule(function()
-						gs.prev_hunk()
-					end)
-					return '<Ignore>'
-				end, { expr = true, buffer = bufnr, desc = 'Jump to previous hunk' })
-			end,
 		},
 	},
 	{
@@ -347,15 +315,15 @@ require('lazy').setup({ -- Run :Lazy; some packages are not 'started'?
 		-- primarily more/better code highlights
 		-- fully configure if best; add cpp, etc.
 		'nvim-treesitter/nvim-treesitter',
+		build = ':TSUpdate', -- TODO: usable with copilot?
 		dependencies = {
 			'nvim-treesitter/nvim-treesitter-textobjects',
 		},
-		build = ':TSUpdate',
 	},
 	-- consider below:
 	-- require 'kickstart.plugins.autoformat',
 	-- require 'kickstart.plugins.debug',
-}, {}) -- what's this last {} about?
+}, { ui = { icons = {} } })
 
 -- Arista
 vim.api.nvim_create_autocmd({"BufRead", "BufNewFile"}, {
@@ -454,27 +422,6 @@ vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep)
 vim.keymap.set('n', '<leader>sG', ':LiveGrepGitRoot<cr>')
 vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics)
 vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume)
-
--- Set the working directory to the directory where Vim was opened
-vim.api.nvim_create_autocmd("VimEnter", {
-    pattern = "*",
-    callback = function()
-        -- Check if an argument was provided at startup
-        local arg = vim.fn.argv(0)
-        if arg ~= "" then
-            -- Get the full path of the argument
-            local path = vim.fn.fnamemodify(arg, ":p")
-            if vim.fn.isdirectory(path) == 1 then
-                -- If the argument is a directory, set it as the working directory
-                vim.cmd("silent! lcd " .. path)
-            else
-                -- If the argument is a file, set its directory as the working directory
-                local file_dir = vim.fn.fnamemodify(path, ":p:h")
-                vim.cmd("silent! lcd " .. file_dir)
-            end
-        end
-    end,
-})
 
 -- [[ Basic Keymaps ]]
 
@@ -716,39 +663,64 @@ vim.g.loaded_netrwPlugin = 1
 -- optionally enable 24-bit colour
 vim.opt.termguicolors = true
 
--- empty setup using defaults
-require("nvim-tree").setup()
-
--- -- OR setup with some options
--- require("nvim-tree").setup({
---   sort = {
---     sorter = "case_sensitive",
---   },
---   view = {
---     width = 30,
---   },
---   renderer = {
---     group_empty = true,
---   },
---   filters = {
---     dotfiles = true,
---   },
--- })
-
-vim.cmd('NvimTreeOpen')
-
 -- Arista
 -- vim.opt.colorcolumn = '85'
 -- vim.api.nvim_create_autocmd('BufReadPre', {
--- 	pattern = '*',
--- 	callback = function()
--- 		local bufname = vim.fn.expand('%:p')
--- 		if vim.bo.buftype == '' and vim.bo.modifiable and vim.fn.filereadable(bufname) then
--- 			vim.fn.system('a p4 edit ' .. vim.fn.shellescape(bufname, true) .. ' >/dev/null 2>&1')
--- 		end
--- 	end })
+--	pattern = '*',
+--	callback = function()
+--		local bufname = vim.fn.expand('%:p')
+--		if vim.bo.buftype == '' and vim.bo.modifiable and vim.fn.filereadable(bufname) then
+--			vim.fn.system('a p4 edit ' .. vim.fn.shellescape(bufname, true) .. ' >/dev/null 2>&1')
+--		end
+--	end })
 -- vim.api.nvim_create_autocmd({"BufRead", "BufNewFile"}, {
--- 	pattern = {"*.tac", "*.tin", "*.itin", "*.arx"},
--- 	command = "setfiletype cpp" })
+--	pattern = {"*.tac", "*.tin", "*.itin", "*.arx"},
+--	command = "setfiletype cpp" })
 
 map('S', ':%s//g<Left><Left>') -- overwritten if put at top?
+
+vim.api.nvim_create_autocmd("VimEnter", {
+  callback = function()
+    -- Set the working directory based on the opened file or directory
+    if vim.fn.argc() > 0 then
+      local arg = vim.fn.argv(0)
+      if arg ~= "" then
+        local path = vim.fn.fnamemodify(arg, ":p")
+        local stat = vim.loop.fs_stat(path)
+        if stat then
+          if stat.type == "directory" then
+            vim.api.nvim_set_current_dir(path)
+          elseif stat.type == "file" then
+            local file_dir = vim.fn.fnamemodify(path, ":p:h")
+            vim.api.nvim_set_current_dir(file_dir)
+          end
+        end
+      end
+    end
+
+    -- Defer opening nvim-tree to ensure the file buffer is loaded
+    vim.schedule(function()
+      require("nvim-tree.api").tree.open()
+      vim.cmd("wincmd p") -- Ensure the focus is on the file buffer
+    end)
+  end,
+})
+
+require("nvim-tree").setup({
+	sort = { sorter = "case_sensitive", },
+	view = { width = 30, },
+	renderer = { group_empty = true, },
+	filters = { dotfiles = true, },
+	sync_root_with_cwd = true,
+	respect_buf_cwd = true,
+	update_cwd = true,
+	update_focused_file = { enable = true, update_cwd = true, },
+})
+
+-- options:
+-- require 'kickstart.plugins.debug',
+-- require 'kickstart.plugins.indent_line',
+-- require 'kickstart.plugins.lint',
+-- require 'kickstart.plugins.autopairs',
+-- require 'kickstart.plugins.neo-tree',
+-- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
